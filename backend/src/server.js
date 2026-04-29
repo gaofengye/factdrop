@@ -58,7 +58,7 @@ app.get("/facts", async (req, res) => {
 
     const prompts = [];
     domains.map((domain) => domain.name).forEach((domain) => {
-      prompts.push(`Peux-tu m'écrire dans un tableau JSON de chaîne de caractères et seulement retourner ce tableau, ${Math.round(10/domains.length)} faits aléatoires de 200 caractères à propos de ce domaine: ${domain}`);
+      prompts.push(`Peux-tu m'écrire dans un tableau JSON de chaîne de caractères et seulement retourner ce tableau, ${Math.round(10/domains.length)} faits aléatoires de 150 caractères à propos de ce domaine: ${domain}`);
     })
 
     const results = await Promise.all(prompts.map((prompt) => model.generateContent(prompt)));
