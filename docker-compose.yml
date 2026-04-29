@@ -1,0 +1,64 @@
+services:
+  backend:
+    build: ./backend
+    container_name: factdrop-backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      PORT: 3001
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: factdrop
+      GEMINI_API_KEY: "AIzaSyBRWZNFO18q4Zvnf40-aemr5vFMebvRPUw"
+    depends_on:
+      db:
+        condition: service_healthy
+      setup-db:
+        condition: service_completed_successfully
+    command: npm run dev
+
+  db:
+    image: postgres:18
+    container_name: factdrop_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: factdrop
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d factdrop"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  setup-db:
+    image: node:22
+    container_name: factdrop_setup
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: factdrop
+      PGADMIN_DB: postgres
+    command: sh -c "npm install && node scripts/setup-factdrop-db.js"
+    restart: "no"
+
+volumes:
+  postgres_data:
