@@ -8,11 +8,12 @@ import { ASYNC_STORAGE_DOMAIN_KEY } from "../Domains";
 import { FACT } from "@/models/fact";
 import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { fetchJson } from "@/utils/fetch";
 
 const Home: FC = () => {
     const { width, height } = useWindowDimensions();
     const [facts, setFacts] = useState<Array<FACT>>([]);
-    const [assets] = useAssets([require('../../assets/images/background_0.jpg'), require('../../assets/images/background_1.jpg'), require('../../assets/images/background_2.jpg'), require('../../assets/images/background_3.jpg'), require('../../assets/images/background_4.jpg'), require('../../assets/images/background_5.jpg'), require('../../assets/images/background_6.jpg'), require('../../assets/images/background_7.jpg'), require('../../assets/images/background_8.jpg'), require('../../assets/images/background_1.jpg'), require('../../assets/images/background_1.jpg')]);
+    const [assets] = useAssets([require('../../assets/images/background_0.jpg'), require('../../assets/images/background_1.jpg'), require('../../assets/images/background_2.jpg'), require('../../assets/images/background_3.jpg'), require('../../assets/images/background_4.jpg'), require('../../assets/images/background_5.jpg'), require('../../assets/images/background_6.jpg'), require('../../assets/images/background_7.jpg'), require('../../assets/images/background_8.jpg'), require('../../assets/images/background_9.jpg'), require('../../assets/images/background_10.jpg')]);
     const [domainsQueryParams, setDomainsQueryParams] = useState<URLSearchParams>();
     const [isLoading, setIsLoading] = useState(false);
     const flatListRef = useRef<FlatList<FACT>>(null);
@@ -24,12 +25,12 @@ const Home: FC = () => {
                 parsedStoredDomains = Object.values(JSON.parse(storedDomains));
                 const params = new URLSearchParams();
                 parsedStoredDomains.forEach((item, index) => {
-                    params.append(`items[${index}][id]`, item.id.toString());
-                    params.append(`items[${index}][name]`, item.name);
+                    params.append(`domains[${index}][id]`, item.id.toString());
+                    params.append(`domains[${index}][name]`, item.name);
                 });
                 setDomainsQueryParams(params);
-                fetch(`${process.env.EXPO_PUBLIC_API_DOMAIN}/facts?${params.toString()}`).then((response) => response.json()).then((response) => {
-                    setFacts((response as unknown as Record<string, Array<string>>).output.map((fact, index) => {
+                fetchJson(`${process.env.EXPO_PUBLIC_API_DOMAIN}/facts?${params.toString()}`).then((response) => {
+                    setFacts((response as unknown as Array<string>).map((fact, index) => {
                         return ({
                             id: index,
                             text: fact,
@@ -42,9 +43,9 @@ const Home: FC = () => {
 
     const fetchFacts = () => {
         setIsLoading(true);
-        fetch(`${process.env.EXPO_PUBLIC_API_DOMAIN}/facts?${domainsQueryParams?.toString()}`).then((response) => response.json()).then((response) => {
+        fetchJson(`${process.env.EXPO_PUBLIC_API_DOMAIN}/facts?${domainsQueryParams?.toString()}`).then((response) => {
             const oldFactsLength = facts.length;
-            setFacts((prev) => [...prev, ...(response as unknown as Record<string, Array<string>>).output.map((fact, index) => {
+            setFacts((prev) => [...prev, ...(response as unknown as Array<string>).map((fact, index) => {
                 return ({
                     id: prev.length + index,
                     text: fact,

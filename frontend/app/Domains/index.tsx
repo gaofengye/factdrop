@@ -5,6 +5,7 @@ import { DOMAIN } from "@/models/domain";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from "./styles";
 import { useAssets } from "expo-asset";
+import { fetchJson } from "@/utils/fetch";
 
 export const ASYNC_STORAGE_DOMAIN_KEY = 'fact-drop-my-domains';
 
@@ -49,17 +50,17 @@ const Domains: FC = () => {
     }
 
     useEffect(() => {
-        fetch(`${process.env.EXPO_PUBLIC_API_DOMAIN}/domains`).then(async (response) => response.json()).then((response) => {
+        fetchJson(`${process.env.EXPO_PUBLIC_API_DOMAIN}/domains`).then((response) => {
             AsyncStorage.getItem(ASYNC_STORAGE_DOMAIN_KEY).then((storedDomains) => {
                 let parsedStoredDomains: Array<DOMAIN> = [];
                 if (storedDomains) {
                     parsedStoredDomains = Object.values(JSON.parse(storedDomains));
-                    setDomains([...response.domains.filter((domain: DOMAIN) => !parsedStoredDomains.some((d) => d.id === domain.id)), ...parsedStoredDomains.map((domain) => {
+                    setDomains([...response.filter((domain: DOMAIN) => !parsedStoredDomains.some((d) => d.id === domain.id)), ...parsedStoredDomains.map((domain) => {
                         return {...domain, selected: true };
                     })].sort(sortId));
                 }
                 else {
-                    setDomains(response.domains.sort(sortId));
+                    setDomains(response.sort(sortId));
                 }
             })
         });
